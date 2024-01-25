@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QPushButton, QVBoxLayout
 from PyQt5.QtCore import Qt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+import numpy as np 
 
 # Function to load a SEGY file and return the data cube and axes details
 def load_segy_file(file_path):
@@ -17,6 +18,7 @@ def load_segy_file(file_path):
 class SeismicInversionGUI(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.current_plot_type = 'inline'  # Attribute to store the current plot type
         self.d, self.il, self.xl, self.t = None, None, None, None
         self.initUI()
 
@@ -86,7 +88,7 @@ class SeismicInversionGUI(QMainWindow):
         self.setCentralWidget(centralWidget)
 
     def loadFile(self):
-        fileName, _ = QFileDialog.getOpenFileName(self, "Open SEGY File", "", "SEGY Files (*.segy)")
+        fileName, _ = QFileDialog.getOpenFileName(self, "Open SEGY File", "", "SEGY Files (*.segy *.sgy)")
         if fileName:
             self.progressBar.setVisible(True)
             self.progressBar.setValue(20)
@@ -99,6 +101,7 @@ class SeismicInversionGUI(QMainWindow):
 
 
     def plot_data(self, plot_type):
+        self.current_plot_type = plot_type
         if self.d is not None:
             self.canvas.figure.clf()  # Clear the entire figure before plotting a new one
             ax = self.canvas.figure.subplots()
@@ -110,18 +113,18 @@ class SeismicInversionGUI(QMainWindow):
             if plot_type == 'inline':
                 index = int(self.inlineInput.text()) if self.inlineInput.text().isdigit() else len(self.il) // 2
                 seismic_slice = self.d[index, :, :].T
-                title = f'Seismic Inline {self.il[index]}'
+                title = f'Seismic Inline {self.il[index] - 510}'
                 info_message = f"Plotting Inline: {self.il[index]} | Total Inlines: {len(self.il)}, Crosslines: {len(self.xl)}, Time Slices: {len(self.t)}"
             elif plot_type == 'crossline':
                 index = int(self.crosslineInput.text()) if self.crosslineInput.text().isdigit() else len(self.xl) // 2
                 seismic_slice = self.d[:, index, :].T
-                title = f'Seismic Crossline {self.xl[index]}'
+                title = f'Seismic Crossline {self.xl[index] - 58}'
                 info_message = f"Plotting Crossline: {self.xl[index]} | Total Inlines: {len(self.il)}, Crosslines: {len(self.xl)}, Time Slices: {len(self.t)}"
             elif plot_type == 'timeslice':
                 index = int(self.timesliceInput.text()) if self.timesliceInput.text().isdigit() else len(self.t) // 2
                 seismic_slice = self.d[:, :, index].T
                 title = f'Seismic Time Slice {self.t[index]} ms'
-                info_message = f"Plotting Time Slice: {self.t[index]} ms | Total Inlines: {len(self.il)}, Crosslines: {len(self.xl)}, Time Slices: {len(self.t)}"
+                info_message = f"Plotting Time Slice: {self.t[index]} ms | Total Inlines: {len(self.il)}, Crosslines: {len(self.xl)}, Time Slices (4 ms each): {len(self.t)}"
 
             # Plot the selected slice
             seismic_plot = ax.imshow(seismic_slice, cmap='seismic', aspect='auto', 
@@ -141,7 +144,8 @@ class SeismicInversionGUI(QMainWindow):
             # Adjust the width of the plot based on the slider value
             new_width = value / 10.0
             self.canvas.figure.set_size_inches(new_width, 8)
-            self.plot_data('inline')  # Re-plot the default or current view
+            self.plot_data(self.current_plot_type)  # Re-plot the current view
+
 
 # Run the application
 app = QApplication(sys.argv)
