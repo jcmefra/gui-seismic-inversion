@@ -1,10 +1,10 @@
 # GUI Seismic Inversion
 
 ## Introduction
-This is an ongoing GUI interface for a geophysical modelling and inversion course, we are using Segyio for the inversion.
+This is an ongoing GUI interface for a geophysical modelling and inversion course, we will be using Segyio for the inversion.
 
 ## Features
-So far the GUI allows to read the SEGY files, chose inline, crossline or time slice, and modify the scale. Inversion is pending but can be done in the notebook.
+So far the GUI allows to read the SEGY files, select inline, crossline or time slice, and modify the scale. Inversion is pending but can be done in the notebook.
 
 ## Installation
 Run pip install -r requirements.txt 
